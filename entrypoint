@@ -2,10 +2,9 @@
 set -eu
 HOSTKEY_DIR=/etc/ssh/hostkey.d
 AUTHORIZED_KEYS_DIR=/etc/ssh/authorized_keys.d
-cp $HOSTKEY_DIR/ssh_host_* /etc/ssh/
+find "$HOSTKEY_DIR" -maxdepth 1 -type f -name 'ssh_host_*' -exec cp '{}' /etc/ssh \;
 ssh-keygen -A
-cp /etc/ssh/ssh_host_* $HOSTKEY_DIR/
-
+find "/etc/ssh" -maxdepth 1 -type f -name 'ssh_host_*' -exec cp '{}' "$HOSTKEY_DIR" \;
 for userdir in $(find "$AUTHORIZED_KEYS_DIR" -maxdepth 1 -type f); do
     user=$(basename $userdir)
     printf "Setting up user %s\n" "$user"
