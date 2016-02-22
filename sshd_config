@@ -1,0 +1,12 @@
+# Disable root login
+PermitRootLogin no
+# Enable public key authentication
+PubkeyAuthentication yes
+# Disable password authentication
+PasswordAuthentication no
+# Look for user authorized keys in a shared dir
+AuthorizedKeysFile	/etc/ssh/authorized_keys.d/%u
+# Disable printing logon message
+PrintMotd no
+
+UsePrivilegeSeparation sandbox		# Default for new installations.

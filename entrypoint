@@ -1,0 +1,16 @@
+#!/bin/sh
+set -eu
+HOSTKEY_DIR=/etc/ssh/hostkey.d
+AUTHORIZED_KEYS_DIR=/etc/ssh/authorized_keys.d
+cp $HOSTKEY_DIR/ssh_host_* /etc/ssh/
+ssh-keygen -A
+cp /etc/ssh/ssh_host_* $HOSTKEY_DIR/
+
+for userdir in $(find "$AUTHORIZED_KEYS_DIR" -maxdepth 1 -type f); do
+    user=$(basename $userdir)
+    printf "Setting up user %s\n" "$user"
+    adduser -D "$user" # Add the account with no password
+    passwd -u "$user"  # Unlock the account as adduser locks new accounts by default
+done
+
+/usr/sbin/sshd -D -e
