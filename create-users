@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+AUTHORIZED_KEYS_DIR=/etc/ssh/authorized_keys.d
+
+users=""
+for keyfile in $(find "$AUTHORIZED_KEYS_DIR" -maxdepth 1 -type f); do
+    user_at_host=$(basename $keyfile)
+    user=${user_at_host%%@*}
+    users="$users $user"
+done
+
+for user in $users; do
+    if ! id "$user" >/dev/null; then
+        printf "Setting up user %s\n" "$user"
+        adduser -D "$user" # Add the account with no password
+        passwd -u "$user"  # Unlock the account as adduser locks new accounts by default
+    fi
+    
+    ssh_dir="/home/$user/.ssh"
+    authorized_keys_file="$ssh_dir/authorized_keys"
+    mkdir -pv "$ssh_dir"
+    >"$authorized_keys_file"
+    num_keys=0
+    for keyfile in $(find "$AUTHORIZED_KEYS_DIR" -maxdepth 1 -type f -name "$user@*"); do
+        cat "$keyfile" >>"$authorized_keys_file"
+        num_keys=$((num_keys+1))
+    done
+    echo "Found $num_keys keys for $user"
+done
